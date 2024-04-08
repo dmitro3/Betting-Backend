@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+  // https://www.prisma.io/docs/concepts/components/prisma-client/full-text-search
+  // https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#compare-columns-in-the-same-table
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model User {
+  id              Int                @id @default(autoincrement())
+  email           String             @unique
+  password        String
+  name            String             @unique
+  avatar          String             @default("")
+  nonce           String             @unique @default(uuid())
+  role            Role               @default(User)
+  deletedAt       DateTime?
+  lastLogin       DateTime?
+  lastActiveAt    DateTime?
+  emailVerifiedAt DateTime?
+  createdAt       DateTime           @default(now())
+  notifications   UserNotification[]
+  wallets         Wallet[]
+  betSlips        BetSlip[]
+  leaderboards    Leaderboard[]
+  transactions    Transaction[]
+}
+
+model Wallet {
+  address     String    @id
+  label       String    @default("")
+  userId      Int?
+  createdAt   DateTime  @default(now())
+  connectedAt DateTime?
+  user        User?     @relation(fields: [userId], references: [id])
+}
+
+model BetSlipGame {
+  id         Int       @id @default(autoincrement())
+  betSlipId  Int?
+  gameId     Int?
+  home       Boolean
+  away       Boolean
+  draw       Boolean
+  gameResult Boolean
+  createdAt  DateTime  @default(now())
+  betSlips   BetSlip[]
+  games      Game[]
+}
+
+model BetSlip {
+  id            Int               @id @default(autoincrement())
+  userId        Int?
+  betSlipGameId Int?
+  totalWager    Float
+  status        BetSlipStatusType
+  finalResults  Int[]
+  token         SplToken          @relation(fields: [splTokenId], references: [id])
+  vaultId       Int?
+  totalWin      Int
+  createdAt     DateTime          @default(now())
+  user          User?             @relation(fields: [userId], references: [id])
+  splTokenId    Int
+  vaults        Vault[]
+  BetSlipGame   BetSlipGame?      @relation(fields: [betSlipGameId], references: [id])
+}
+
+model Vault {
+  id                   Int      @id @default(autoincrement())
+  numberOfParticipants Int      @default(0)
+  tokenAmount          Int
+  v13Right             Int
+  v12Right             Int
+  v11Right             Int
+  v10Right             Int
+  BetSlip              BetSlip? @relation(fields: [betSlipId], references: [id])
+  betSlipId            Int?
+}
+
+model Game {
+  id            Int          @id @default(autoincrement())
+  betSlipGameId Int?
+  opponent1     String
+  opponent2     String
+  dateTime      DateTime     @default(now())
+  result        String
+  leage         String
+  BetSlipGame   BetSlipGame? @relation(fields: [betSlipGameId], references: [id])
+}
+
+model Leaderboard {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  points    Int
+  rank      Int
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  type      String
+  amount    Float
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  Superadmin
+  Admin
+  Tester
+  User
+}
+
+model SplToken {
+  id       Int       @id @default(autoincrement())
+  name     String
+  address  String
+  decimals Int
+  symbol   String
+  priority Int // should this be @unique?
+  icon     String
+  BetSlip  BetSlip[]
+}
+
+enum GlobalStatusType {
+  Success
+  Info
+  Warning
+  Maintenance
+}
+
+enum BetSlipStatusType {
+  Deposited
+  Pending
+  Resolved
+}
+
+model Notification {
+  id        Int                @id @default(autoincrement())
+  title     String
+  body      String
+  image     String?
+  createdAt DateTime           @default(now())
+  users     UserNotification[]
+}
+
+model UserNotification {
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  notificationId Int
+  readAt         DateTime?
+
+  @@id([userId, notificationId])
+}

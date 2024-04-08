@@ -1,0 +1,175 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id Int [pk, increment]
+  email String [unique, not null]
+  password String [not null]
+  name String [unique, not null]
+  avatar String [not null, default: '']
+  nonce String [unique, not null]
+  role Role [not null, default: 'User']
+  deletedAt DateTime
+  lastLogin DateTime
+  lastActiveAt DateTime
+  emailVerifiedAt DateTime
+  createdAt DateTime [default: `now()`, not null]
+  notifications UserNotification [not null]
+  wallets Wallet [not null]
+  betSlips BetSlip [not null]
+  leaderboards Leaderboard [not null]
+  transactions Transaction [not null]
+}
+
+Table Wallet {
+  address String [pk]
+  label String [not null, default: '']
+  userId Int
+  createdAt DateTime [default: `now()`, not null]
+  connectedAt DateTime
+  user User
+}
+
+Table BetSlipGame {
+  id Int [pk, increment]
+  betSlipId Int
+  gameId Int
+  home Boolean [not null]
+  away Boolean [not null]
+  draw Boolean [not null]
+  gameResult Boolean [not null]
+  createdAt DateTime [default: `now()`, not null]
+  betSlips BetSlip [not null]
+  games Game [not null]
+}
+
+Table BetSlip {
+  id Int [pk, increment]
+  userId Int
+  betSlipGameId Int
+  totalWager Float [not null]
+  status BetSlipStatusType [not null]
+  finalResults Int[] [not null]
+  token SplToken [not null]
+  vaultId Int
+  totalWin Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+  user User
+  splTokenId Int [not null]
+  vaults Vault [not null]
+  BetSlipGame BetSlipGame
+}
+
+Table Vault {
+  id Int [pk, increment]
+  numberOfParticipants Int [not null, default: 0]
+  tokenAmount Int [not null]
+  v13Right Int [not null]
+  v12Right Int [not null]
+  v11Right Int [not null]
+  v10Right Int [not null]
+  BetSlip BetSlip
+  betSlipId Int
+}
+
+Table Game {
+  id Int [pk, increment]
+  betSlipGameId Int
+  opponent1 String [not null]
+  opponent2 String [not null]
+  dateTime DateTime [default: `now()`, not null]
+  result String [not null]
+  leage String [not null]
+  BetSlipGame BetSlipGame
+}
+
+Table Leaderboard {
+  id Int [pk, increment]
+  userId Int
+  points Int [not null]
+  rank Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+  user User
+}
+
+Table Transaction {
+  id Int [pk, increment]
+  userId Int
+  type String [not null]
+  amount Float [not null]
+  createdAt DateTime [default: `now()`, not null]
+  user User
+}
+
+Table SplToken {
+  id Int [pk, increment]
+  name String [not null]
+  address String [not null]
+  decimals Int [not null]
+  symbol String [not null]
+  priority Int [not null]
+  icon String [not null]
+  BetSlip BetSlip [not null]
+}
+
+Table Notification {
+  id Int [pk, increment]
+  title String [not null]
+  body String [not null]
+  image String
+  createdAt DateTime [default: `now()`, not null]
+  users UserNotification [not null]
+}
+
+Table UserNotification {
+  user User [not null]
+  userId Int [not null]
+  notification Notification [not null]
+  notificationId Int [not null]
+  readAt DateTime
+
+  indexes {
+    (userId, notificationId) [pk]
+  }
+}
+
+Enum Role {
+  Superadmin
+  Admin
+  Tester
+  User
+}
+
+Enum GlobalStatusType {
+  Success
+  Info
+  Warning
+  Maintenance
+}
+
+Enum BetSlipStatusType {
+  Deposited
+  Pending
+  Resolved
+}
+
+Ref: Wallet.userId > User.id
+
+Ref: BetSlip.splTokenId > SplToken.id
+
+Ref: BetSlip.userId > User.id
+
+Ref: BetSlip.betSlipGameId > BetSlipGame.id
+
+Ref: Vault.betSlipId > BetSlip.id
+
+Ref: Game.betSlipGameId > BetSlipGame.id
+
+Ref: Leaderboard.userId > User.id
+
+Ref: Transaction.userId > User.id
+
+Ref: UserNotification.userId > User.id [delete: Cascade]
+
+Ref: UserNotification.notificationId > Notification.id [delete: Cascade]
