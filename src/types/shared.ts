@@ -3,7 +3,7 @@ import {
   MetaplexFile,
   UploadMetadataOutput,
 } from '@metaplex-foundation/js';
-import { User, Wallet } from '@prisma/client';
+import { User } from '@prisma/client';
 
 export type PickByType<T, V> = {
   [P in keyof T as T[P] extends V | undefined ? P : never]: T[P];
@@ -35,4 +35,4 @@ export type With<T extends any[]> = T extends [infer First, ...infer Rest]
   ? Merge<First, With<Rest>>
   : object;
 
-export type Referee = User & { wallets: Wallet[] };
+export type Referee = User;

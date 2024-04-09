@@ -15,7 +15,6 @@ export type BaseJwtPayload = {
 export type UserPayload = {
   type: 'user';
   id: User['id'];
-  email: User['email'];
   name: User['name'];
   role: User['role'];
 };

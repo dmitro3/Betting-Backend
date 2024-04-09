@@ -14,36 +14,22 @@ generator dbml {
 }
 
 model User {
-  id              Int                @id @default(autoincrement())
-  email           String             @unique
-  password        String
-  name            String             @unique
-  avatar          String             @default("")
-  nonce           String             @unique @default(uuid())
-  role            Role               @default(User)
-  deletedAt       DateTime?
-  lastLogin       DateTime?
-  lastActiveAt    DateTime?
-  emailVerifiedAt DateTime?
-  createdAt       DateTime           @default(now())
-  notifications   UserNotification[]
-  wallets         Wallet[]
-  betSlips        BetSlip[]
-  leaderboards    Leaderboard[]
-  transactions    Transaction[]
-}
-
-model Wallet {
-  address     String    @id
-  label       String    @default("")
-  userId      Int?
-  createdAt   DateTime  @default(now())
-  connectedAt DateTime?
-  user        User?     @relation(fields: [userId], references: [id])
+  id            String             @id @unique
+  walletAddress String             @unique
+  name          String             @unique
+  nonce         String             @unique @default(uuid())
+  role          Role               @default(User)
+  deletedAt     DateTime?
+  lastLogin     DateTime?
+  createdAt     DateTime           @default(now())
+  notifications UserNotification[]
+  betSlips      BetSlip[]
+  leaderboards  Leaderboard[]
+  transactions  Transaction[]
 }
 
 model BetSlipGame {
-  id         Int       @id @default(autoincrement())
+  id         String    @id @unique
   betSlipId  Int?
   gameId     Int?
   home       Boolean
@@ -56,24 +42,24 @@ model BetSlipGame {
 }
 
 model BetSlip {
-  id            Int               @id @default(autoincrement())
-  userId        Int?
-  betSlipGameId Int?
+  id            String            @id @unique
   totalWager    Float
   status        BetSlipStatusType
   finalResults  Int[]
-  token         SplToken          @relation(fields: [splTokenId], references: [id])
+  userId        String?
+  splTokenId    String
+  betSlipGameId String?
   vaultId       Int?
+  token         SplToken          @relation(fields: [splTokenId], references: [id])
   totalWin      Int
   createdAt     DateTime          @default(now())
   user          User?             @relation(fields: [userId], references: [id])
-  splTokenId    Int
   vaults        Vault[]
   BetSlipGame   BetSlipGame?      @relation(fields: [betSlipGameId], references: [id])
 }
 
 model Vault {
-  id                   Int      @id @default(autoincrement())
+  id                   String   @id @unique
   numberOfParticipants Int      @default(0)
   tokenAmount          Int
   v13Right             Int
@@ -81,12 +67,12 @@ model Vault {
   v11Right             Int
   v10Right             Int
   BetSlip              BetSlip? @relation(fields: [betSlipId], references: [id])
-  betSlipId            Int?
+  betSlipId            String?
 }
 
 model Game {
-  id            Int          @id @default(autoincrement())
-  betSlipGameId Int?
+  id            String       @id @unique
+  betSlipGameId String?
   opponent1     String
   opponent2     String
   dateTime      DateTime     @default(now())
@@ -96,8 +82,8 @@ model Game {
 }
 
 model Leaderboard {
-  id        Int      @id @default(autoincrement())
-  userId    Int?
+  id        String   @id @unique
+  userId    String?
   points    Int
   rank      Int
   createdAt DateTime @default(now())
@@ -105,8 +91,8 @@ model Leaderboard {
 }
 
 model Transaction {
-  id        Int      @id @default(autoincrement())
-  userId    Int?
+  id        String   @id @unique
+  userId    String?
   type      String
   amount    Float
   createdAt DateTime @default(now())
@@ -121,7 +107,7 @@ enum Role {
 }
 
 model SplToken {
-  id       Int       @id @default(autoincrement())
+  id       String    @id @unique
   name     String
   address  String
   decimals Int
@@ -145,7 +131,7 @@ enum BetSlipStatusType {
 }
 
 model Notification {
-  id        Int                @id @default(autoincrement())
+  id        String             @id @unique
   title     String
   body      String
   image     String?
@@ -155,9 +141,9 @@ model Notification {
 
 model UserNotification {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         Int
+  userId         String
   notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-  notificationId Int
+  notificationId String
   readAt         DateTime?
 
   @@id([userId, notificationId])

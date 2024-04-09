@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 
 export const splTokensToSeed: Prisma.SplTokenCreateManyArgs['data'] = [
   {
+    id: 'ua73-ad8j-a82j-kkk2',
     name: 'Wrapped Sol',
     address: WRAPPED_SOL_MINT.toBase58(),
     priority: 1,
@@ -11,6 +12,7 @@ export const splTokensToSeed: Prisma.SplTokenCreateManyArgs['data'] = [
     icon: 'spl-tokens/wrapped-sol/icon.png',
   },
   {
+    id: 'ua73-ad8j-a82j-kkk2',
     name: 'USD Coin',
     address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     priority: 2,
@@ -19,6 +21,7 @@ export const splTokensToSeed: Prisma.SplTokenCreateManyArgs['data'] = [
     icon: 'spl-tokens/usd-coin/icon.png',
   },
   {
+    id: 'ua73-ad8j-a82j-kkk2',
     name: 'NANA Token',
     address: 'HxRELUQfvvjToVbacjr9YECdfQMUqGgPYB68jVDYxkbr',
     priority: 3,
@@ -27,6 +30,7 @@ export const splTokensToSeed: Prisma.SplTokenCreateManyArgs['data'] = [
     icon: 'spl-tokens/nana-token/icon.png',
   },
   {
+    id: 'ua73-ad8j-a82j-kkk2',
     name: 'COCO Token',
     address: '74DSHnK1qqr4z1pXjLjPAVi8XFngZ635jEVpdkJtnizQ',
     priority: 3,

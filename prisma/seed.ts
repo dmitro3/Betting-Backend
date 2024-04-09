@@ -14,7 +14,6 @@ async function main() {
   }
 
   console.info('Emptying the database...');
-  await prisma.wallet.deleteMany();
   await prisma.user.deleteMany();
   await prisma.splToken.deleteMany();
   console.info('Emptied database!');

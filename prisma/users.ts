@@ -13,45 +13,39 @@ export const usersToSeed = async (): Promise<
   Prisma.UserCreateManyArgs['data']
 > => [
   {
+    id: 'ua73-ad8j-a82j-kkk2',
+    walletAddress: '5x4DyBUsJFYuBFBUstXVraoGG9RtzPEJqaL4F8u637vt',
     name: 'superadmin',
-    email: 'superadmin@dreader.io',
-    password: await hashPassword('superadmin'),
-    emailVerifiedAt: new Date(),
     role: Role.Superadmin,
   },
   {
+    id: 'A98Z-a82j-kkk2-ad8j',
+    walletAddress: 'F2pmrUchaCWys2G5XDpAAdd1wKPcrBkbQWCTAWwTAJ7B',
     name: 'admin',
-    email: 'admin@dreader.io',
-    password: await hashPassword('admin'),
-    emailVerifiedAt: new Date(),
     role: Role.Admin,
   },
   {
+    id: 'B98Z-a82j-kkk2-ad8j',
+    walletAddress: '6AtKiRvb9jJxcdwpYVYH6V7YvrCf66nurFoPBhZDB9vh',
     name: 'josip',
-    email: 'josip.volarevic@dreader.io',
-    password: await hashPassword('josip'),
-    emailVerifiedAt: new Date(),
   },
   {
+    id: 'C98Z-a82j-kkk2-ad8j',
+    walletAddress: '3kyio5QtGG3gwJnqAReWjSWNyc8ssQv6qFsp3MVZ2dqw',
     name: 'luka',
-    email: 'luka.crnogorac@dreader.io',
-    password: await hashPassword('luka'),
-    emailVerifiedAt: new Date(),
   },
   {
+    id: 'D98Z-a82j-kkk2-ad8j',
+    walletAddress: '8EoHYKeNj6CUX2gKaTAYVd6d9FsfGaoUyQh1csxSx9qd',
     name: 'testgoogleplay',
-    email: 'test@google.play',
-    password: await hashPassword('testgoogleplay'),
-    emailVerifiedAt: new Date(),
   },
 ];
 
 const generateDummyUserData = (): Prisma.UserCreateArgs['data'] => {
   return {
+    id: faker.database.mongodbObjectId(),
+    walletAddress: faker.finance.bitcoinAddress(),
     name: faker.internet.userName(),
-    email: faker.internet.email(),
-    password: faker.internet.password(),
-    emailVerifiedAt: faker.date.past(),
   };
 };
 

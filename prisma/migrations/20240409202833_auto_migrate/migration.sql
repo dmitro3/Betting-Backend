@@ -9,36 +9,21 @@ CREATE TYPE "BetSlipStatusType" AS ENUM ('Deposited', 'Pending', 'Resolved');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
+    "id" TEXT NOT NULL,
+    "walletAddress" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "avatar" TEXT NOT NULL DEFAULT '',
     "nonce" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'User',
     "deletedAt" TIMESTAMP(3),
     "lastLogin" TIMESTAMP(3),
-    "lastActiveAt" TIMESTAMP(3),
-    "emailVerifiedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Wallet" (
-    "address" TEXT NOT NULL,
-    "label" TEXT NOT NULL DEFAULT '',
-    "userId" INTEGER,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "connectedAt" TIMESTAMP(3),
-
-    CONSTRAINT "Wallet_pkey" PRIMARY KEY ("address")
-);
-
--- CreateTable
 CREATE TABLE "BetSlipGame" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "betSlipId" INTEGER,
     "gameId" INTEGER,
     "home" BOOLEAN NOT NULL,
@@ -52,38 +37,38 @@ CREATE TABLE "BetSlipGame" (
 
 -- CreateTable
 CREATE TABLE "BetSlip" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER,
-    "betSlipGameId" INTEGER,
+    "id" TEXT NOT NULL,
     "totalWager" DOUBLE PRECISION NOT NULL,
     "status" "BetSlipStatusType" NOT NULL,
     "finalResults" INTEGER[],
+    "userId" TEXT,
+    "splTokenId" TEXT NOT NULL,
+    "betSlipGameId" TEXT,
     "vaultId" INTEGER,
     "totalWin" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "splTokenId" INTEGER NOT NULL,
 
     CONSTRAINT "BetSlip_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Vault" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "numberOfParticipants" INTEGER NOT NULL DEFAULT 0,
     "tokenAmount" INTEGER NOT NULL,
     "v13Right" INTEGER NOT NULL,
     "v12Right" INTEGER NOT NULL,
     "v11Right" INTEGER NOT NULL,
     "v10Right" INTEGER NOT NULL,
-    "betSlipId" INTEGER,
+    "betSlipId" TEXT,
 
     CONSTRAINT "Vault_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Game" (
-    "id" SERIAL NOT NULL,
-    "betSlipGameId" INTEGER,
+    "id" TEXT NOT NULL,
+    "betSlipGameId" TEXT,
     "opponent1" TEXT NOT NULL,
     "opponent2" TEXT NOT NULL,
     "dateTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -95,8 +80,8 @@ CREATE TABLE "Game" (
 
 -- CreateTable
 CREATE TABLE "Leaderboard" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER,
+    "id" TEXT NOT NULL,
+    "userId" TEXT,
     "points" INTEGER NOT NULL,
     "rank" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -106,8 +91,8 @@ CREATE TABLE "Leaderboard" (
 
 -- CreateTable
 CREATE TABLE "Transaction" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER,
+    "id" TEXT NOT NULL,
+    "userId" TEXT,
     "type" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -117,7 +102,7 @@ CREATE TABLE "Transaction" (
 
 -- CreateTable
 CREATE TABLE "SplToken" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "decimals" INTEGER NOT NULL,
@@ -130,7 +115,7 @@ CREATE TABLE "SplToken" (
 
 -- CreateTable
 CREATE TABLE "Notification" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "body" TEXT NOT NULL,
     "image" TEXT,
@@ -141,15 +126,18 @@ CREATE TABLE "Notification" (
 
 -- CreateTable
 CREATE TABLE "UserNotification" (
-    "userId" INTEGER NOT NULL,
-    "notificationId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
+    "notificationId" TEXT NOT NULL,
     "readAt" TIMESTAMP(3),
 
     CONSTRAINT "UserNotification_pkey" PRIMARY KEY ("userId","notificationId")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_walletAddress_key" ON "User"("walletAddress");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_name_key" ON "User"("name");
@@ -157,8 +145,29 @@ CREATE UNIQUE INDEX "User_name_key" ON "User"("name");
 -- CreateIndex
 CREATE UNIQUE INDEX "User_nonce_key" ON "User"("nonce");
 
--- AddForeignKey
-ALTER TABLE "Wallet" ADD CONSTRAINT "Wallet_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "BetSlipGame_id_key" ON "BetSlipGame"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BetSlip_id_key" ON "BetSlip"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Vault_id_key" ON "Vault"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Game_id_key" ON "Game"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Leaderboard_id_key" ON "Leaderboard"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Transaction_id_key" ON "Transaction"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SplToken_id_key" ON "SplToken"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Notification_id_key" ON "Notification"("id");
 
 -- AddForeignKey
 ALTER TABLE "BetSlip" ADD CONSTRAINT "BetSlip_splTokenId_fkey" FOREIGN KEY ("splTokenId") REFERENCES "SplToken"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
