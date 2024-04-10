@@ -9,6 +9,8 @@ import { AppService } from './app.service';
 import { AuthModule } from '@modules/auth/auth.module';
 import config from '@configs/config';
 import { SecurityConfig, ThrottleConfig } from '@configs/config.interface';
+import { UserModule } from '@modules/user/user.module';
+import { BetModule } from '@modules/bet/bet.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { SecurityConfig, ThrottleConfig } from '@configs/config.interface';
         ];
       },
     }),
+    UserModule,
+    BetModule,
   ],
   controllers: [AppController],
   providers: [AppService],

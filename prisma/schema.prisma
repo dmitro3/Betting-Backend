@@ -29,56 +29,56 @@ model User {
 }
 
 model BetSlipGame {
-  id         String    @id @unique
-  betSlipId  Int?
-  gameId     Int?
-  home       Boolean
-  away       Boolean
-  draw       Boolean
-  gameResult Boolean
-  createdAt  DateTime  @default(now())
-  betSlips   BetSlip[]
-  games      Game[]
+  id                   String     @id @unique
+  gameId               Int?
+  numberOfParticipants Int        @default(0)
+  tokens               SplToken[]
+  tokenAmounts         Int[]
+  v13Right             Int
+  v12Right             Int
+  v11Right             Int
+  v10Right             Int
+  home                 Boolean
+  away                 Boolean
+  draw                 Boolean
+  gameResult           Boolean
+  createdAt            DateTime   @default(now())
+  betSlips             BetSlip[]
+  games                Game[]
 }
 
 model BetSlip {
   id            String            @id @unique
   totalWager    Float
   status        BetSlipStatusType
+  predictions   Prediction[]
   finalResults  Int[]
   userId        String?
-  splTokenId    String
   betSlipGameId String?
-  vaultId       Int?
-  token         SplToken          @relation(fields: [splTokenId], references: [id])
   totalWin      Int
   createdAt     DateTime          @default(now())
   user          User?             @relation(fields: [userId], references: [id])
-  vaults        Vault[]
   BetSlipGame   BetSlipGame?      @relation(fields: [betSlipGameId], references: [id])
 }
 
-model Vault {
-  id                   String   @id @unique
-  numberOfParticipants Int      @default(0)
-  tokenAmount          Int
-  v13Right             Int
-  v12Right             Int
-  v11Right             Int
-  v10Right             Int
-  BetSlip              BetSlip? @relation(fields: [betSlipId], references: [id])
-  betSlipId            String?
+model Prediction {
+  id        String   @id @unique
+  first     Boolean
+  equal     Boolean
+  second    Boolean
+  BetSlip   BetSlip? @relation(fields: [betSlipId], references: [id])
+  betSlipId String?
 }
 
 model Game {
-  id            String       @id @unique
+  id            String        @id @unique
   betSlipGameId String?
   opponent1     String
   opponent2     String
-  dateTime      DateTime     @default(now())
+  dateTime      DateTime      @default(now())
   result        String
   leage         String
-  BetSlipGame   BetSlipGame? @relation(fields: [betSlipGameId], references: [id])
+  BetSlipGame   BetSlipGame[]
 }
 
 model Leaderboard {
@@ -107,14 +107,15 @@ enum Role {
 }
 
 model SplToken {
-  id       String    @id @unique
-  name     String
-  address  String
-  decimals Int
-  symbol   String
-  priority Int // should this be @unique?
-  icon     String
-  BetSlip  BetSlip[]
+  id            String       @id @unique
+  name          String
+  address       String       @unique
+  decimals      Int
+  symbol        String
+  priority      Int // should this be @unique?
+  icon          String
+  BetSlipGame   BetSlipGame? @relation(fields: [betSlipGameId], references: [id])
+  betSlipGameId String?
 }
 
 enum GlobalStatusType {

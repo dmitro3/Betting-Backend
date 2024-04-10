@@ -19,8 +19,14 @@ Table User {
 
 Table BetSlipGame {
   id String [pk]
-  betSlipId Int
   gameId Int
+  numberOfParticipants Int [not null, default: 0]
+  tokens SplToken [not null]
+  tokenAmounts Int[] [not null]
+  v13Right Int [not null]
+  v12Right Int [not null]
+  v11Right Int [not null]
+  v10Right Int [not null]
   home Boolean [not null]
   away Boolean [not null]
   draw Boolean [not null]
@@ -34,27 +40,21 @@ Table BetSlip {
   id String [pk]
   totalWager Float [not null]
   status BetSlipStatusType [not null]
+  predictions Prediction [not null]
   finalResults Int[] [not null]
   userId String
-  splTokenId String [not null]
   betSlipGameId String
-  vaultId Int
-  token SplToken [not null]
   totalWin Int [not null]
   createdAt DateTime [default: `now()`, not null]
   user User
-  vaults Vault [not null]
   BetSlipGame BetSlipGame
 }
 
-Table Vault {
+Table Prediction {
   id String [pk]
-  numberOfParticipants Int [not null, default: 0]
-  tokenAmount Int [not null]
-  v13Right Int [not null]
-  v12Right Int [not null]
-  v11Right Int [not null]
-  v10Right Int [not null]
+  first Boolean [not null]
+  equal Boolean [not null]
+  second Boolean [not null]
   BetSlip BetSlip
   betSlipId String
 }
@@ -67,7 +67,7 @@ Table Game {
   dateTime DateTime [default: `now()`, not null]
   result String [not null]
   leage String [not null]
-  BetSlipGame BetSlipGame
+  BetSlipGame BetSlipGame [not null]
 }
 
 Table Leaderboard {
@@ -91,12 +91,13 @@ Table Transaction {
 Table SplToken {
   id String [pk]
   name String [not null]
-  address String [not null]
+  address String [unique, not null]
   decimals Int [not null]
   symbol String [not null]
   priority Int [not null]
   icon String [not null]
-  BetSlip BetSlip [not null]
+  BetSlipGame BetSlipGame
+  betSlipGameId String
 }
 
 Table Notification {
@@ -120,6 +121,11 @@ Table UserNotification {
   }
 }
 
+Table BetSlipGameToGame {
+  gamesId String [ref: > Game.id]
+  betslipgameId String [ref: > BetSlipGame.id]
+}
+
 Enum Role {
   Superadmin
   Admin
@@ -140,19 +146,17 @@ Enum BetSlipStatusType {
   Resolved
 }
 
-Ref: BetSlip.splTokenId > SplToken.id
-
 Ref: BetSlip.userId > User.id
 
 Ref: BetSlip.betSlipGameId > BetSlipGame.id
 
-Ref: Vault.betSlipId > BetSlip.id
-
-Ref: Game.betSlipGameId > BetSlipGame.id
+Ref: Prediction.betSlipId > BetSlip.id
 
 Ref: Leaderboard.userId > User.id
 
 Ref: Transaction.userId > User.id
+
+Ref: SplToken.betSlipGameId > BetSlipGame.id
 
 Ref: UserNotification.userId > User.id [delete: Cascade]
 
