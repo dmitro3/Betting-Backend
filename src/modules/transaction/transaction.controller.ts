@@ -6,7 +6,7 @@ import { AdminGuard } from '@guards/roles.guard';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
 @UseGuards(ThrottlerGuard)
-@ApiTags('Transactino')
+@ApiTags('Transaction')
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
@@ -15,28 +15,28 @@ export class TransactionController {
   @AdminGuard()
   @Get('get/:id')
   async findOne(@Param('id') id: string): Promise<any> {
-    const user = await this.transactionService.findOne(id);
+    const user = await this.transactionService.findById(id);
     return user;
   }
 
   /* Update specific transaction */
-  @AdminGuard()
-  @Patch('update/:id')
-  async update(
-    @Param('id') id: string,
-    @Body() UpdateTransactionDto: UpdateTransactionDto,
-  ): Promise<UpdateTransactionDto> {
-    const transation = await this.transactionService.updateTransaction(
-      id,
-      UpdateTransactionDto,
-    );
-    return transation;
-  }
+  // @AdminGuard()
+  // @Patch('update/:id')
+  // async update(
+  //   @Param('id') id: string,
+  //   @Body() UpdateTransactionDto: UpdateTransactionDto,
+  // ): Promise<UpdateTransactionDto> {
+  //   const transation = await this.transactionService.updateTransaction(
+  //     id,
+  //     UpdateTransactionDto,
+  //   );
+  //   return transation;
+  // }
 
-  /* Delete transaction */
-  @AdminGuard()
-  @Patch('delete/:id')
-  async delete(@Param('id') id: string) {
-    await this.transactionService.deleteTransaction(id);
-  }
+  // /* Delete transaction */
+  // @AdminGuard()
+  // @Patch('delete/:id')
+  // async delete(@Param('id') id: string) {
+  //   await this.transactionService.de(id);
+  // }
 }

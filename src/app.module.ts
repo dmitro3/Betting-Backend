@@ -3,14 +3,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
-import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from '@modules/auth/auth.module';
 import config from '@configs/config';
 import { SecurityConfig, ThrottleConfig } from '@configs/config.interface';
 import { UserModule } from '@modules/user/user.module';
-import { BetModule } from '@modules/bet/bet.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { BetModule } from '@modules/betslip/betSlip.module';
+import { BetSlipGame } from '@modules/betSlipGame/betSlipGame.schema';
+import { Match } from '@modules/match/match.schema';
 
 @Module({
   imports: [
@@ -26,12 +28,11 @@ import { BetModule } from '@modules/bet/bet.module';
       },
       inject: [ConfigService],
     }),
-    PrismaModule.forRoot({
-      isGlobal: true,
-
-      prismaServiceOptions: {
-        middlewares: [loggingMiddleware()],
-        prismaOptions: { errorFormat: 'pretty' },
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return configService.get('database');
       },
     }),
     ScheduleModule.forRoot(),
@@ -51,6 +52,8 @@ import { BetModule } from '@modules/bet/bet.module';
     }),
     UserModule,
     BetModule,
+    BetSlipGame,
+    Match,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -15,7 +15,7 @@ import { validateName } from '@utils/user';
 import { Authorization } from './dto/authorization.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { UserAuth } from '@guards/user-auth.guard';
+
 @UseGuards(ThrottlerGuard)
 @ApiTags('Auth')
 @Controller('auth')

@@ -1,4 +1,4 @@
-import { BetExpectation } from 'src/types/expectation';
+import { BetPrediction } from 'src/types/expectation';
 import {
   ValidationOptions,
   isURL,
@@ -12,7 +12,7 @@ export const IS_RIGHT_ARRAY = 'isRightArray';
  * Checks if string is empty and if not, checks if it's a URL.
  */
 export function isRightArray(
-  values: Array<BetExpectation>,
+  values: Array<BetPrediction>,
   length: number,
 ): boolean {
   return values.length === length;

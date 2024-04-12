@@ -1,51 +1,21 @@
-import { NotAcceptableException, Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from 'nestjs-prisma';
-import { uuid } from '@utils/generator';
-import { BetSlipStatusType } from '@prisma/client';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Transaction } from './transaction.schema';
+import { Model } from 'mongoose';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
 
 @Injectable()
 export class TransactionService {
   private logger = new Logger(TransactionService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(Transaction.name) private transactionModel: Model<Transaction>,
+  ) {}
 
-  findOne = async (transactionId: string) => {
-    return await this.prisma.transaction.findUnique({
-      where: {
-        id: transactionId,
-      },
-    });
-  };
+  async findById(id: string) {
+    return await this.transactionModel.findById(id);
+  }
 
-  createTransaction = async (userId: string, type: string, amount: number) => {
-    return await this.prisma.transaction.create({
-      data: {
-        id: uuid(),
-        user: {
-          connect: { id: userId },
-        },
-        type,
-        amount,
-      },
-    });
-  };
-
-  updateTransaction = async (id: string, { type }: UpdateTransactionDto) => {
-    return await this.prisma.transaction.update({
-      where: {
-        id,
-      },
-      data: {
-        type,
-      },
-    });
-  };
-
-  deleteTransaction = async (transactionId: string) => {
-    return await this.prisma.transaction.delete({
-      where: {
-        id: transactionId,
-      },
-    });
-  };
+  async create(data: CreateTransactionDto) {
+    return await this.transactionModel.create(data);
+  }
 }

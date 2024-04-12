@@ -1,4 +1,13 @@
-import { Transaction } from '@solana/web3.js';
+import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
+import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+
+const NODE_API_KEY = '';
+
+export const connection = new Connection(
+  // `https://light-morning-sea.solana-mainnet.quiknode.pro/${NODE_API_KEY}/`,
+  `https://light-morning-sea.solana-devnet.quiknode.pro/${NODE_API_KEY}/`,
+  'confirmed',
+);
 
 export const decodeBs58 = (encodedString: string) => {
   return new TextEncoder().encode(encodedString);
@@ -21,4 +30,30 @@ export const decodeTransaction = (
   } else {
     throw new Error('Unsupported encoding format, base58 and base64 supported');
   }
+};
+
+export const adminSignAndConfirmTransaction = async (
+  ADMIN_WALLET: NodeWallet,
+  tx: Transaction,
+) => {
+  // Sign the transaction with admin's Keypair
+  tx = await ADMIN_WALLET.signTransaction(tx);
+
+  return confirmTransaction(tx);
+};
+
+export const confirmTransaction = async (tx: Transaction) => {
+  const sTx = tx.serialize();
+
+  // Send the raw transaction
+  const options = {
+    commitment: 'confirmed',
+    skipPreflight: false,
+  };
+
+  // Confirm the transaction
+  const signature = await connection.sendRawTransaction(sTx, options);
+  const confirmed = await connection.confirmTransaction(signature, 'confirmed');
+
+  return { confirmed, signature };
 };

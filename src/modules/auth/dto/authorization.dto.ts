@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { User } from '@modules/user/user.schema';
 
 export class Authorization {
   accessToken: string;
@@ -13,17 +13,10 @@ export type BaseJwtPayload = {
 };
 
 export type UserPayload = {
-  type: 'user';
-  id: User['id'];
+  walletAddress: User['walletAddress'];
   name: User['name'];
   role: User['role'];
 };
 
 export type JwtPayload = UserPayload;
 export type JwtDto = JwtPayload & BaseJwtPayload;
-
-export type EmailPayload = {
-  email: string;
-  id: number; // user or creator id
-};
-export type EmailJwtDto = EmailPayload & BaseJwtPayload;

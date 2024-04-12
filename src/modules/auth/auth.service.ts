@@ -5,12 +5,12 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'nestjs-prisma';
-import { User } from '@prisma/client';
 import { pick } from 'lodash';
 import { JwtDto, JwtPayload } from './dto/authorization.dto';
 import { ConfigService } from '@nestjs/config';
 import { SecurityConfig } from '@configs/config.interface';
+import { User } from '@modules/user/user.schema';
+import { UserService } from '@modules/user/user.service';
 
 const sanitizePayload = (payload: JwtPayload) => {
   return pick(payload, 'type', 'id', 'email', 'name', 'role');
@@ -20,15 +20,15 @@ const sanitizePayload = (payload: JwtPayload) => {
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
   ) {}
 
   authorizeUser(user: User) {
     return {
-      accessToken: this.generateAccessToken({ ...user, type: 'user' }),
-      refreshToken: this.generateRefreshToken({ ...user, type: 'user' }),
+      accessToken: this.generateAccessToken(user),
+      refreshToken: this.generateRefreshToken(user),
     };
   }
 
@@ -60,26 +60,17 @@ export class AuthService {
       throw new UnauthorizedException('Authorization expired');
     }
 
-    if (jwtDto.type === 'user') {
-      const user = await this.prisma.user.update({
-        where: { id: jwtDto.id },
-        data: { lastLogin: new Date() },
-      });
-
-      return this.generateAccessToken({ ...user, type: 'user' });
-    }
+    const user = await this.userService.findByWalletAddress(
+      jwtDto.walletAddress,
+    );
+    return this.generateAccessToken(user);
   }
 
   async validateJwt(jwtDto: JwtDto): Promise<JwtPayload> {
-    if (jwtDto.type === 'user') {
-      const user = await this.prisma.user.findUnique({
-        where: { id: jwtDto.id },
-      });
+    const user = await this.userService.findByWalletAddress(
+      jwtDto.walletAddress,
+    );
 
-      if (!user) throw new NotFoundException('User not found');
-      return { ...user, type: 'user' };
-    } else {
-      throw new ForbiddenException('Authorization type unknown');
-    }
+    return user;
   }
 }

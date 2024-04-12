@@ -3,7 +3,7 @@ import {
   MetaplexFile,
   UploadMetadataOutput,
 } from '@metaplex-foundation/js';
-import { User } from '@prisma/client';
+import { User } from '@modules/user/user.schema';
 
 export type PickByType<T, V> = {
   [P in keyof T as T[P] extends V | undefined ? P : never]: T[P];

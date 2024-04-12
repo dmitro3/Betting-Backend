@@ -29,7 +29,7 @@ export class UserController {
   @UserAuth()
   @Get('get/me')
   async findMe(@UserEntity() user: UserPayload): Promise<UserDto> {
-    const me = await this.userService.findMe(user.id);
+    const me = await this.userService.findByWalletAddress(user.walletAddress);
     return toUserDto(me);
   }
 
@@ -45,7 +45,7 @@ export class UserController {
   @AdminGuard()
   @Get('get/:id')
   async findOne(@Param('id') id: string): Promise<UserDto> {
-    const user = await this.userService.findOne(id);
+    const user = await this.userService.findById(id);
     return toUserDto(user);
   }
 
@@ -63,14 +63,14 @@ export class UserController {
   /* Pseudo delete genre */
   @UserOwnerAuth()
   @Patch('delete/:id')
-  async pseudoDelete(@Param('id') id: string) {
-    await this.userService.pseudoDelete(id);
+  async delete(@Param('id') id: string) {
+    await this.userService.delete(id);
   }
 
   /* Recover genre */
   @UserOwnerAuth()
   @Patch('recover/:id')
-  async pseudoRecover(@Param('id') id: string) {
-    await this.userService.pseudoRecover(id);
+  async recover(@Param('id') id: string) {
+    await this.userService.recover(id);
   }
 }

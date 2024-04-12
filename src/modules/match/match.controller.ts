@@ -9,28 +9,28 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { GameService } from './game.service';
 import { AdminGuard } from '@guards/roles.guard';
-import { CreateGameDto } from './dto/create-game.dto';
+import { CreateMatchDto } from './dto/create-match.dto';
+import { MatchService } from './match.service';
 
 @UseGuards(ThrottlerGuard)
-@ApiTags('Game')
-@Controller('game')
-export class GameController {
-  constructor(private readonly gameService: GameService) {}
+@ApiTags('Match')
+@Controller('match')
+export class MatchController {
+  constructor(private readonly matchService: MatchService) {}
 
   /* Get specific game unique id */
   @Get('get/:id')
   async findOne(@Param('id') id: string): Promise<any> {
-    const game = await this.gameService.findOne(id);
+    const game = await this.matchService.findById(id);
     return game;
   }
 
   /* Create new game */
   @AdminGuard()
   @Post('create')
-  async create(@Body() data: CreateGameDto): Promise<any> {
-    const game = await this.gameService.create(data);
+  async create(@Body() data: CreateMatchDto): Promise<any> {
+    const game = await this.matchService.create(data);
     return game;
   }
 
@@ -38,6 +38,6 @@ export class GameController {
   @AdminGuard()
   @Patch('delete/:id')
   async delete(@Param('id') id: string) {
-    return await this.gameService.delete(id);
+    return await this.matchService.delete(id);
   }
 }

@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 import { IsRightArray } from '@decorators/IsRightArray';
-import { Transaction } from '@solana/web3.js';
 import { BetPrediction } from 'src/types/expectation';
 
 export class UserPredictionDto {
@@ -13,17 +12,15 @@ export class UserPredictionDto {
   @IsArray()
   @IsRightArray(13)
   @IsNotEmpty()
-  expections: Array<BetPrediction>;
+  predictions: Array<BetPrediction>;
 
   @ApiProperty({
     required: true,
     type: 'transaction',
-    description: 'Send transaction',
+    description: 'Deposit transaction',
   })
-  @IsArray()
-  @IsRightArray(13)
   @IsNotEmpty()
-  transaction: Transaction;
+  encodedTx: string;
 
   @ApiProperty({
     required: true,

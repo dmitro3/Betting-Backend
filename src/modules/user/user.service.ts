@@ -7,26 +7,23 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from 'nestjs-prisma';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { subDays } from 'date-fns';
 import { UpdateUserDto } from '@modules/user/dto/update-user.dto';
 import { validateName } from '@utils/user';
-import { AuthService } from '../auth/auth.service';
 import { insensitive } from '@utils/lodash';
 import { UserFilterParams } from './dto/user-params.dto';
-import { EmailPayload, UserPayload } from '../auth/dto/authorization.dto';
 import { generateRandomNonce, uuid } from '@utils/generator';
 import { RegisterDto } from '@modules/auth/dto/register.dto';
 import { LoginDto } from '@modules/auth/dto/login.dto';
 import { validateEd25519Address, verifySignature } from '@utils/solana';
+import { User } from './user.schema';
 
 @Injectable()
 export class UserService {
   private logger = new Logger(UserService.name);
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async register({ walletAddress }: RegisterDto) {
     this.logger.log(
@@ -39,25 +36,18 @@ export class UserService {
 
     const nonce = generateRandomNonce();
 
-    let user = await this.prisma.user.findUnique({
-      where: {
-        walletAddress,
-      },
+    let user = await this.userModel.findOne({
+      walletAddress,
     });
     if (user) {
-      await this.prisma.user.update({
-        where: { walletAddress },
-        data: { nonce },
-      });
+      await this.userModel.findOneAndUpdate({ walletAddress }, { nonce });
     } else {
-      const newUserId = uuid();
-      await this.prisma.user.create({
-        data: {
-          id: newUserId,
-          name: newUserId,
-          nonce: nonce,
-          walletAddress: walletAddress,
-        },
+      const name = uuid();
+      // this.userModel.crea
+      await this.userModel.create({
+        walletAddress,
+        name,
+        nonce,
       });
     }
 
@@ -67,8 +57,8 @@ export class UserService {
   async login(loginDto: LoginDto) {
     const { walletAddress, signature } = loginDto;
 
-    const user = await this.prisma.user.findUnique({
-      where: { walletAddress },
+    const user = await this.userModel.findOne({
+      walletAddress,
     });
 
     if (!user)
@@ -85,43 +75,46 @@ export class UserService {
         HttpStatus.EXPECTATION_FAILED,
       );
 
-    return this.prisma.user.update({
-      where: { id: user.id },
-      data: { lastLogin: new Date() },
-    });
+    return this.userModel.findByIdAndUpdate(
+      user.id,
+      {
+        lastLogin: new Date(),
+      },
+      { new: true },
+    );
   }
 
   async findAll(query: UserFilterParams) {
-    const users = await this.prisma.user.findMany({
-      skip: query?.skip,
-      take: query?.take,
-      where: { deletedAt: null },
-    });
+    const users = await this.userModel.find(
+      { deletedAt: null },
+      { skip: query?.skip, take: query?.take },
+    );
 
     return users;
   }
 
-  async findMe(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
-
-    return user;
-  }
-
-  async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
-
+  async findById(id: string) {
+    const user = await this.userModel.findById(id);
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     } else return user;
   }
 
+  async findByWalletAddress(walletAddress: string) {
+    const user = await this.userModel.findOne({
+      walletAddress: walletAddress.toLowerCase(),
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with wallet ${walletAddress} does not exist`,
+      );
+    } else return user;
+  }
+
   async findByName(name: string) {
-    const user = await this.prisma.user.findFirst({
-      where: { name: insensitive(name) },
+    const user = await this.userModel.findOne({
+      name: insensitive(name),
     });
 
     if (!user) {
@@ -132,35 +125,33 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto) {
     const { name } = updateUserDto;
 
-    const user = await this.findOne(id);
+    const user = await this.findById(id);
     const isNameUpdated = name && user.name !== name;
 
     if (isNameUpdated) {
       validateName(name);
       await this.throwIfNameTaken(name);
-      await this.prisma.user.update({
-        where: { id },
-        data: { name },
-      });
-    }
-
-    const updatedUser = await this.prisma.user.findUnique({ where: { id } });
-    return updatedUser;
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        id,
+        { name },
+        { new: true },
+      );
+      return updatedUser;
+    } else throw new BadRequestException(`${name} is invalid`);
   }
 
   async throwIfNameTaken(name: string) {
-    const user = await this.prisma.user.findFirst({
-      where: { name: insensitive(name) },
+    const user = await this.userModel.findOne({
+      name: insensitive(name),
     });
 
     if (user) throw new BadRequestException(`${name} already taken`);
   }
 
-  async pseudoDelete(id: string) {
+  async delete(id: string) {
     try {
-      const user = await this.prisma.user.update({
-        where: { id },
-        data: { deletedAt: new Date() },
+      const user = await this.userModel.findByIdAndDelete(id, {
+        deletedAt: new Date(),
       });
 
       return user;
@@ -169,12 +160,9 @@ export class UserService {
     }
   }
 
-  async pseudoRecover(id: string) {
+  async recover(id: string) {
     try {
-      return await this.prisma.user.update({
-        where: { id },
-        data: { deletedAt: null },
-      });
+      return await this.userModel.findByIdAndUpdate(id, { deletedAt: null });
     } catch {
       throw new NotFoundException(`User with id ${id} not found`);
     }
@@ -182,15 +170,9 @@ export class UserService {
 
   @Cron(CronExpression.EVERY_DAY_AT_NOON)
   protected async bumpNewUsersWithUnverifiedEmails() {
-    const newUnverifiedUsers = await this.prisma.user.findMany({
-      where: {
-        AND: [
-          // created more than 3 days ago
-          { createdAt: { lte: subDays(new Date(), 3) } },
-          // created not longer than 4 days ago
-          { createdAt: { gte: subDays(new Date(), 4) } },
-        ],
-      },
+    const newUnverifiedUsers = await this.userModel.find({
+      // created more than 3 days ago && not longer than 4 days ago
+      createdAt: { lte: subDays(new Date(), 3), gte: subDays(new Date(), 4) },
     });
 
     return newUnverifiedUsers;
